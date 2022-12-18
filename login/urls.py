@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.urls import path, include
 from . import views
 
+
 urlpatterns = [
     path('', views.home, name='home'),
 
@@ -17,7 +18,7 @@ urlpatterns = [
     path('signin_otp/', views.signin_otp, name='signin_otp'),
     path('otp/', views.validate_otp, name='otp'),
 
-    path('authors/<str:pk>/', views.authors, name='authors'),
+    path('authors/', views.authors, name='authors'),
     path('novels/<str:pk>/', views.novels, name='novels'),
 
 ]

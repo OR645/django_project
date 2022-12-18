@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from django.db.models import Q
 from .models import Product, Novel, Author
 from .form import CreateUser, CreateProduct
 from django.conf import settings
@@ -64,8 +65,13 @@ def validate_otp(request):
 @login_required(login_url='signin')
 def home(request):
     users = User.objects.all()
-    product = Product.objects.all()
-    return render(request, 'Home.html', {'product':product, 'users': users})
+    if 'search' in request.GET:
+        search = request.GET['search']
+        multiple = Q(Q(product__icontains=search) | Q(description__icontains=search) | Q(user__username__icontains=search))
+        product = Product.objects.filter(multiple)
+    else:
+        product = Product.objects.all()
+    return render(request, 'Home.html', {'product': product, 'users': users})
 
 
 def signup(request):
@@ -141,16 +147,25 @@ def delete_product(request, pk):
     return render(request, 'product/delete_product.html', context)
 
 
-def authors(request, pk):
-    author = Author.objects.get(id=pk)
+def authors(request):
+    if 'search' in request.GET:
+        search = request.GET['search']
+        author = Author.objects.filter(author__icontains=search)
+    else:
+        author = Author.objects.all()
     context = {'author': author}
     return render(request, 'books/author.html', context)
 
 
 def novels(request, pk):
-    novel = Novel.objects.get(id=pk)
-    context = {'novel': novel}
+    author = Author.objects.get(id=pk)
+    if 'search' in request.GET:
+        search = request.GET['search']
+        multiple = Q(Q(name__icontains=search) | Q(description__icontains=search))
+        novel = Novel.objects.filter(multiple)
+    else:
+        novel = Novel.objects.all()
+    context = {'novel': novel, 'author': author}
     return render(request, 'books/novel.html', context)
-
 
 
